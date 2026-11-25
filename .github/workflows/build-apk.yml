@@ -19,19 +19,17 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Locate and Unpack Zip
+      - name: Unpack Zip and Build
         run: |
-          find . -maxdepth 2 -name "*.zip" -exec unzip -o {} -d extracted_source \;
-
-      - name: Find Gradlew and Build
-        run: |
+          if ls *.zip >/dev/null 2>&1; then
+            unzip -o '*.zip' -d extracted_source
+          fi
           GRADLEW_PATH=$(find . -name "gradlew" | head -n 1)
           if [ -z "$GRADLEW_PATH" ]; then
             echo "Khong tim thay gradlew!"
             exit 1
           fi
           PROJECT_DIR=$(dirname "$GRADLEW_PATH")
-          echo "Build tai thu muc: $PROJECT_DIR"
           cd "$PROJECT_DIR"
           chmod +x gradlew
           ./gradlew assembleDebug
