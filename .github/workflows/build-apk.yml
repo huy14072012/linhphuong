@@ -17,25 +17,30 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
-      - name: Unpack Zip and Build
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Unpack Zip and Build APK
         run: |
           if ls *.zip >/dev/null 2>&1; then
             unzip -o '*.zip' -d extracted_source
           fi
-          GRADLEW_PATH=$(find . -name "gradlew" | head -n 1)
-          if [ -z "$GRADLEW_PATH" ]; then
-            echo "Khong tim thay gradlew!"
+          PROJECT_DIR=$(dirname "$(find . -maxdepth 4 -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1)")
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "Khong tim thay thu muc du an Gradle!"
             exit 1
           fi
-          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
           cd "$PROJECT_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          if [ ! -f "gradlew" ]; then
+            gradle wrapper --no-daemon
+          fi
+          chmod +x gradlew || true
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: MatchaCut-debug-apk
-          path: '**/*.apk'
+          path: "**/*.apk"
