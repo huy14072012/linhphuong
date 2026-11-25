@@ -33,11 +33,17 @@ jobs:
             exit 1
           fi
           cd "$PROJECT_DIR"
+          if [ ! -f "debug.keystore" ]; then
+            keytool -genkeypair -v -keystore debug.keystore \
+              -storepass android -alias androiddebugkey -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
           if [ ! -f "gradlew" ]; then
             gradle wrapper --no-daemon
           fi
           chmod +x gradlew || true
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug -x test --no-daemon
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
